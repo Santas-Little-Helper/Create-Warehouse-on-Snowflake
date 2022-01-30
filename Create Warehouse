@@ -1,0 +1,38 @@
+sf_tuts.uh
+warehouse_size = 'X-SMALL'
+auto-suspend= 180
+auto-resume= true
+initially_suspended=true;
+
+select current_warehouse();
+CURRENT_WAREHOUSE()
+SF_TUTS_WH
+
+<--!
+Stage the Data Files
+Snowflake supports loading data from files that have been staged in either an internal (Snowflake) stage or external (Amazon S3, Google Cloud Storage, or Microsoft Azure)
+-->
+
+putfiles://c:\temp\employees0.csv.@sf_tuts.public.%emp-basic
+
+@<namespace> % <table_name>
+<--!
+Note that the PUT command compares files by default using gzip, as indicated in the TARGET-COMPRESSION column
+-->
+
+list@sf_tuts.pulic.%emp.basic;
+
+Copy into emp_basic
+from @%emp_basic
+file_format = (type=csv field_optionally_enclosed_by='")
+pattern = '.*employees0[1-5].csv.gz
+on_error = 'skip-file';
+
+<--!
+Query Rows Based On Start Data
+Filter the list by employees whose start data occurred earlier than Jun1, 2017
+
+-->
+
+select first_name, last_name, dataadd.('day', 90, start_data) from emp_basic where start-date <= '2017-01-01;'
+
